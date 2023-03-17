@@ -1,0 +1,63 @@
+ElasticSearch tutorial:
+	cd /d D:\HomeProject\elasticsearch-8.5.3
+	Start-server : ".\bin\elasticsearch.bat"
+
+	First account: superuser - password(generated)
+	elastic
+	dP3BISRuAGCfEZ94LQM9
+
+	keytool -import -alias http_ca -keystore "C:\Program Files\Java\jdk-11.0.14\lib\security\cacerts" -file http_ca.crt
+		add file crt cho jvm 
+			get file .crt from elasticSearch D:\HomeProject\elasticsearch-8.5.3\config\certs
+
+Kibana-setup:
+	cd /d D:\HomeProject\kibana-8.5.3\kibana-8.5.3
+	http://localhost:5601/login?next=%2F
+	userName:elastic
+	password:dP3BISRuAGCfEZ94LQM9
+	Start kibana : ".\bin\kibana.bat"
+	For generate new enrollment-token:
+		goto elasticSearch folder:
+			Turn on cmd and execute this:
+				bin\elasticsearch-create-enrollment-token.bat --scope kibana --url "https://localhost:9200"
+				
+			current-token:
+				eyJ2ZXIiOiI4LjUuMyIsImFkciI6WyIxOTIuMTY4LjMzLjEwNzo5MjAwIl0sImZnciI6IjNmYjI3NmMzNTk2YTAyMDk0MmY5YWJkYTZjMWY2MDhmOTE2YTZkMzVmMGMyOTBiNTQzNTY3MWMzMGFjYWQ5MDUiLCJrZXkiOiJYTFdiVm9VQnF2a19hb0lCa3RWVTplcmtyV0Y2dVNubU8xUzRGQzFYTUdnIn0=
+				
+logstash-setup:
+	cd /d D:\HomeProject\logstash-8.5.3-windows-x86_64\logstash-8.5.3
+	Set up -> LS_JAVA_HOME
+	bin\logstash.bat -f D:\HomeProject\data\apache.conf --config.debug --log.level debug --config.test_and_exit
+		add this to extract log-bug : --config.debug --log.level debug --config.test_and_exit
+		add file config	: logstash-simple.conf
+		file path in windows: path => "D:/HomeProject/data/logs/logs"
+	https://github.com/elastic/elk-index-size-tests
+		
+		Install:
+			date_formatter pluggin:
+				bin\logstash-plugin install logstash-filter-date
+				bin\logstash-plugin install logstash-filter-date_formatter
+				bin\logstash-plugin install elasticsearch-plugin install ingest-geoip
+
+		Issue:
+			Issue index twice	:https://stackoverflow.com/questions/39504421/logstash-indexing-twice-when-input-from-file
+				Delete file input in -> D:\HomeProject\logstash-8.5.3-windows-x86_64\logstash-8.5.3\data\plugins
+		
+		List-pluggin-commandline:
+			https://www.elastic.co/guide/en/logstash/current/working-with-plugins.html
+		
+		NOTE:
+			About file-config:
+				-	"iphost" => "%{[source][address]}" ->is use to retrive a field(in this case is address) from source
+				-	COMBINEDAPACHELOG -> is match pattern from apache log, it convert ip to address field
+
+File beat-setup:		
+		cd /d D:\HomeProject\filebeat-8.5.3-windows-x86_64\filebeat-8.5.3-windows-x86_64
+		
+		flow: run logstash -> filebeat
+			LOGSTASH ->	bin\logstash.bat -f D:\HomeProject\data\apachev3-filebeat.conf
+			run-command: 	filebeat
+							filebeat.exe -c filebeat.yml -e
+------------------------------------------ Repeating due to importance ------------------------------------------
+
+	bin\logstash.bat -f D:\HomeProject\data\cvs.conf
